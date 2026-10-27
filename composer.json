@@ -1,0 +1,66 @@
+{
+    "name": "birdycom/omniaui-livewire",
+    "description": "OmniaUI for Livewire 3: wire:model aware components, controllable modals and sheets, toast dispatch helper and an abstract DataTable component.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "livewire",
+        "blade",
+        "css",
+        "omniacss",
+        "components"
+    ],
+    "authors": [
+        {
+            "name": "Serge Cools (Birdycom)"
+        }
+    ],
+    "homepage": "https://github.com/Birdycom/OmniaUI",
+    "require": {
+        "php": "^8.2",
+        "birdycom/omniaui-laravel": "^0.11.0",
+        "livewire/livewire": "^3.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "phpunit/phpunit": "^10.5|^11.0|^12.0"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../omniaui-laravel",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "birdycom/omniaui-laravel": "0.11.0"
+                }
+            }
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Omniacss\\Livewire\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omniacss\\Livewire\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Omniacss\\Livewire\\OmniacssLivewireServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
