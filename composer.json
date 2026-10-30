@@ -24,7 +24,7 @@
     },
     "require": {
         "php": "^8.2",
-        "birdycom/omniaui-laravel": "^0.12.2",
+        "birdycom/omniaui-laravel": "^0.12.3",
         "livewire/livewire": "^3.0"
     },
     "require-dev": {
@@ -38,7 +38,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "birdycom/omniaui-laravel": "0.12.2"
+                    "birdycom/omniaui-laravel": "0.12.3"
                 }
             }
         }
