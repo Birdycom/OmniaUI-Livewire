@@ -1,7 +1,7 @@
 <!-- File: php-packages/omniaui-livewire/README.md | Map: purpose -> install -> components -> modals -> toasts -> data table -> tests -> notes -->
 # birdycom/omniaui-livewire
 
-Livewire 3 versions of the OmniaUI components where state matters. Builds on [`birdycom/omniaui-laravel`](https://packagist.org/packages/birdycom/omniaui-laravel) (same `oc` prefix, so `<x-oc::wire.modal>`). Everything is Blade plus a little Alpine (shipped with Livewire 3); there are no colors in PHP.
+Livewire 3 and 4 versions of the OmniaUI components where state matters. Builds on [`birdycom/omniaui-laravel`](https://packagist.org/packages/birdycom/omniaui-laravel) (same `oc` prefix, so `<x-oc::wire.modal>`). Everything is Blade plus a little Alpine (shipped with Livewire); there are no colors in PHP.
 
 - Version: `0.12.4` (same version as OmniaCSS and OmniaUI)
 - Site: https://omniaui.eu · Source: https://github.com/Birdycom/OmniaUI (`php-packages/omniaui-livewire`)
@@ -132,7 +132,7 @@ vendor/bin/phpunit
 
 ## Notes
 
-- The dialog components use `wire:ignore.self` and Alpine (`$wire.entangle`), shipped with Livewire 3.
+- The dialog components use `wire:ignore.self` and Alpine (`$wire.entangle`), shipped with Livewire 3 and 4.
 - `wire.tag-input` is `wire:ignore`; its state flows through the entangled array.
 - This package is developed in the [OmniaUI monorepo](https://github.com/Birdycom/OmniaUI) and mirrored to its own repository for Packagist. Open issues and pull requests there.
 
