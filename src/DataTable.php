@@ -81,7 +81,9 @@ abstract class DataTable extends Component
 
     /**
      * Row actions rendered in the last column: list of ['label' => ..., 'href' => ...] or ['label' => ..., 'wire' => 'delete(1)'].
-     * Add 'destructive' => true for the destructive style.
+     * Add 'destructive' => true for the destructive style. With 'icon' => 'mdi:pencil-outline' the action is a square soft
+     * icon button (the label becomes its aria-label and tooltip); 'tone' picks its color: primary (default), success,
+     * warning, destructive or info.
      *
      * @return list<array<string, mixed>>
      */
