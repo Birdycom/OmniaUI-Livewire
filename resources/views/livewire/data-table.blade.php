@@ -41,7 +41,16 @@
                             @endforeach
                             <td class="oc-table-actions">
                                 @foreach ($rowActions[$index] ?? [] as $action)
-                                    @if (! empty($action['href']))
+                                    @if (! empty($action['icon']))
+                                        @php
+                                            $tone = $action['tone'] ?? (empty($action['destructive']) ? 'primary' : 'destructive');
+                                        @endphp
+                                        @if (! empty($action['href']))
+                                            <a class="oc-btn oc-btn--soft-{{ $tone }} oc-btn--icon oc-btn--sm" href="{{ $action['href'] }}" aria-label="{{ $action['label'] }}" title="{{ $action['label'] }}"><iconify-icon icon="{{ $action['icon'] }}" aria-hidden="true"></iconify-icon></a>
+                                        @else
+                                            <button class="oc-btn oc-btn--soft-{{ $tone }} oc-btn--icon oc-btn--sm" type="button" wire:click="{{ $action['wire'] ?? '' }}" aria-label="{{ $action['label'] }}" title="{{ $action['label'] }}"><iconify-icon icon="{{ $action['icon'] }}" aria-hidden="true"></iconify-icon></button>
+                                        @endif
+                                    @elseif (! empty($action['href']))
                                         <a @class(['oc-table-row-action', 'oc-table-row-action--destructive' => ! empty($action['destructive'])]) href="{{ $action['href'] }}">{{ $action['label'] }}</a>
                                     @else
                                         <button @class(['oc-table-row-action', 'oc-table-row-action--destructive' => ! empty($action['destructive'])]) type="button" wire:click="{{ $action['wire'] ?? '' }}">{{ $action['label'] }}</button>
