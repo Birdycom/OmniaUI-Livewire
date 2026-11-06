@@ -3,7 +3,7 @@
 
 Livewire 3 and 4 versions of the OmniaUI components where state matters. Builds on [`birdycom/omniaui-laravel`](https://packagist.org/packages/birdycom/omniaui-laravel) (same `oc` prefix, so `<x-oc::wire.modal>`). Everything is Blade plus a little Alpine (shipped with Livewire); there are no colors in PHP.
 
-- Version: `0.14.3` (same version as OmniaCSS and OmniaUI)
+- Version: `0.14.4` (same version as OmniaCSS and OmniaUI)
 - Site: https://omniaui.eu · Source: https://github.com/Birdycom/OmniaUI (`php-packages/omniaui-livewire`)
 
 ## Install
