@@ -18,7 +18,7 @@
             <span class="oc-table-toolbar-spacer"></span>
         </div>
         <div class="oc-table-wrap">
-            <table class="oc-table">
+            <table class="{{ $tableClass ?? 'oc-table' }}">
                 <thead>
                     <tr>
                         @foreach ($columns as $key => $column)
@@ -30,7 +30,7 @@
                                 @endif
                             </th>
                         @endforeach
-                        <th><span class="oc-visually-hidden">Actions</span></th>
+                        <th><span class="oc-visually-hidden">{{ $labels['actions'] }}</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,9 +62,9 @@
                         <tr class="oc-table-empty">
                             <td colspan="{{ count($columns) + 1 }}">
                                 <div class="oc-empty">
-                                    <h3 class="oc-empty-title">No results</h3>
+                                    <h3 class="oc-empty-title">{{ $labels['noResults'] }}</h3>
                                     @if (trim($search) !== '')
-                                        <p class="oc-empty-text">Nothing matches &ldquo;{{ $search }}&rdquo;.</p>
+                                        <p class="oc-empty-text">{{ str_replace('{search}', $search, $labels['nothingMatches']) }}</p>
                                     @endif
                                 </div>
                             </td>
@@ -75,12 +75,12 @@
         </div>
         <div class="oc-table-footer">
             @if ($rows->total() > 0)
-                <span>Showing {{ $rows->firstItem() }} to {{ $rows->lastItem() }} of {{ $rows->total() }} entries</span>
+                <span>{{ str_replace(['{from}', '{to}', '{total}'], [$rows->firstItem(), $rows->lastItem(), $rows->total()], $labels['showing']) }}</span>
             @else
-                <span>No entries</span>
+                <span>{{ $labels['noEntries'] }}</span>
             @endif
-            <label>Rows per page
-                <select class="oc-select" wire:model.live="perPage" aria-label="Rows per page">
+            <label>{{ $labels['rowsPerPage'] }}
+                <select class="oc-select" wire:model.live="perPage" aria-label="{{ $labels['rowsPerPage'] }}">
                     @foreach ($perPageOptions as $option)
                         <option value="{{ $option }}">{{ $option }}</option>
                     @endforeach
@@ -92,16 +92,16 @@
                     $last = $rows->lastPage();
                     $pages = collect(range(1, $last))->filter(fn ($p) => $p === 1 || $p === $last || abs($p - $current) <= 2)->values();
                 @endphp
-                <nav aria-label="Pagination">
+                <nav aria-label="{{ $labels['pagination'] }}">
                     <ul class="oc-pagination">
-                        <li class="oc-pagination-item"><a href="#" wire:click.prevent="previousPage" aria-label="Previous">&lsaquo;</a></li>
+                        <li class="oc-pagination-item"><a href="#" wire:click.prevent="previousPage" aria-label="{{ $labels['previous'] }}">&lsaquo;</a></li>
                         @foreach ($pages as $i => $page)
                             @if ($i > 0 && $page - $pages[$i - 1] > 1)
                                 <li class="oc-pagination-item" aria-hidden="true">&hellip;</li>
                             @endif
                             <li @class(['oc-pagination-item', 'is-active' => $page === $current])><a href="#" wire:click.prevent="gotoPage({{ $page }})" @if ($page === $current) aria-current="page" @endif>{{ $page }}</a></li>
                         @endforeach
-                        <li class="oc-pagination-item"><a href="#" wire:click.prevent="nextPage" aria-label="Next">&rsaquo;</a></li>
+                        <li class="oc-pagination-item"><a href="#" wire:click.prevent="nextPage" aria-label="{{ $labels['next'] }}">&rsaquo;</a></li>
                     </ul>
                 </nav>
             @endif

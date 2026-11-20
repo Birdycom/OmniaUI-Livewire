@@ -73,6 +73,40 @@ abstract class DataTable extends Component
         return 'Search...';
     }
 
+    /**
+     * Table look: 'default', 'striped' (.oc-table--striped), 'compact' (.oc-table--compact), or a list of both.
+     *
+     * @return string|list<string>
+     */
+    protected function variant(): string|array
+    {
+        return 'default';
+    }
+
+    /**
+     * Texts of the table in another language: any subset of the keys of DataTable::LABELS, e.g.
+     * ['actions' => 'Acties', 'showing' => '{from} tot {to} van {total}', 'rowsPerPage' => 'Rijen per pagina'].
+     *
+     * @return array<string, string>
+     */
+    protected function labels(): array
+    {
+        return [];
+    }
+
+    /** English texts; {from}, {to}, {total} and {search} are filled in by the view. */
+    public const LABELS = [
+        'actions' => 'Actions',
+        'noResults' => 'No results',
+        'nothingMatches' => "Nothing matches \u{201C}{search}\u{201D}.",
+        'showing' => 'Showing {from} to {to} of {total} entries',
+        'noEntries' => 'No entries',
+        'rowsPerPage' => 'Rows per page',
+        'pagination' => 'Pagination',
+        'previous' => 'Previous',
+        'next' => 'Next',
+    ];
+
     /** @return list<int> */
     protected function perPageOptions(): array
     {
@@ -188,6 +222,12 @@ abstract class DataTable extends Component
             'description' => $this->description(),
             'placeholder' => $this->searchPlaceholder(),
             'perPageOptions' => $this->perPageOptions(),
+            'tableClass' => collect((array) $this->variant())
+                ->filter(fn ($v): bool => in_array($v, ['striped', 'compact'], true))
+                ->map(fn (string $v): string => 'oc-table--'.$v)
+                ->prepend('oc-table')
+                ->implode(' '),
+            'labels' => array_merge(self::LABELS, $this->labels()),
         ]);
     }
 }
