@@ -40,7 +40,6 @@ class DocsSnippetsTest extends TestCase
         'blade:components/empty-state #2' => 'uses $distance from the controller',
         'blade:components/logo #1' => 'uses $customer from the controller',
         'blade:components/logo #2' => 'uses $logo from the controller',
-        'blade:components/sidebar #2' => 'uses $collapsed from the controller',
         'blade:components/status-dot #4' => 'uses $state from the controller',
         'blade:blocks/content-blocks #1' => 'uses $step from the controller',
         'blade:blocks/route-progress #1' => 'uses $route from the controller',
@@ -107,7 +106,8 @@ class DocsSnippetsTest extends TestCase
     /** @return array{0: string, 1: string, 2: ?string} PHP class, Blade part, path of the Blade part */
     private function split(string $snippet): array
     {
-        $lines = preg_split('/\R/', $snippet);
+        // /u: without it \R also matches a lone 0x85 byte (NEL) inside a UTF-8 character such as ★ (E2 98 85)
+        $lines = preg_split('/\R/u', $snippet);
         $at = null;
         $path = null;
         foreach ($lines as $n => $line) {
