@@ -1,10 +1,11 @@
-{{-- OmniaCSS select with wire:model shorthand. Props: model, live, blur, options (value => label), placeholder, error. Slot: raw <option> markup. --}}
-@props(['model' => null, 'live' => false, 'blur' => false, 'options' => [], 'placeholder' => null, 'error' => null])
+{{-- OmniaCSS select with wire:model shorthand. Props: model, live, blur, options (value => label), placeholder, error. Slot: raw <option> markup.
+     0.17.0: variant ("ledger"), module (data-module). --}}
+@props(['model' => null, 'live' => false, 'blur' => false, 'options' => [], 'placeholder' => null, 'error' => null, 'variant' => null, 'module' => null])
 @php
     $property = $model ?? \Omniacss\Livewire\WireModel::propertyOf($attributes);
     $invalid = $error ?? ($property && isset($errors) && $errors->has($property));
 @endphp
-<select {{ $attributes->class(['oc-select'])->merge(\Omniacss\Livewire\WireModel::attributes($model, (bool) $live, (bool) $blur)) }} @if ($invalid) aria-invalid="true" @endif>
+<select {{ $attributes->class(['oc-select', 'oc-select--ledger' => $variant === 'ledger'])->merge(\Omniacss\Livewire\WireModel::attributes($model, (bool) $live, (bool) $blur))->merge(array_filter(['data-module' => $module], fn ($v) => $v !== null)) }} @if ($invalid) aria-invalid="true" @endif>
     @if ($placeholder !== null)
         <option value="">{{ $placeholder }}</option>
     @endif

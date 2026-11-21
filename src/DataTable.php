@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-// File: src/DataTable.php | Map: state props -> columns/query hooks -> rows -> view
+// File: src/DataTable.php | Map: state props -> columns/query hooks -> trash filter (0.17.0) -> column chooser (0.17.0) -> rows -> view
 
 namespace Omniacss\Livewire;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -31,6 +32,11 @@ use Livewire\WithPagination;
  *   }
  *
  * Render it with <livewire:users-table />.
+ *
+ * 0.17.0: trash pills (active / including trash / trash only, plus "archive only" when you handle it in applyTrashed())
+ * show on their own for a model with SoftDeletes, or when trashedOptions() returns them; the choice is $trashed (?trashed=
+ * in the URL). While a request runs the table shows skeleton rows (wire:loading). Columns can be hidden with the column
+ * chooser ($hidden; a column with 'hideable' => false always shows).
  */
 abstract class DataTable extends Component
 {
@@ -48,8 +54,16 @@ abstract class DataTable extends Component
     #[Url(as: 'per', except: 10)]
     public int $perPage = 10;
 
+    /** Trash filter (0.17.0): active, all, deleted or archived. */
+    #[Url(as: 'trashed', except: 'active')]
+    public string $trashed = 'active';
+
+    /** Keys of the columns the user hid with the column chooser (0.17.0). */
+    public array $hidden = [];
+
     /**
-     * Columns: key => label, or key => ['label' => ..., 'sortable' => bool, 'numeric' => bool, 'searchable' => bool].
+     * Columns: key => label, or key => ['label' => ..., 'sortable' => bool, 'numeric' => bool, 'searchable' => bool,
+     * 'hideBelow' => 'sm'|'md'|'lg' (hide the column when the table is narrower than 24, 32 or 48rem)].
      *
      * @return array<string, string|array<string, mixed>>
      */
@@ -105,6 +119,13 @@ abstract class DataTable extends Component
         'pagination' => 'Pagination',
         'previous' => 'Previous',
         'next' => 'Next',
+        'trashFilter' => 'Trash filter',
+        'activeOnly' => 'Active only',
+        'includingTrash' => 'Including trash',
+        'trashOnly' => 'Trash only',
+        'archiveOnly' => 'Archive only',
+        'columns' => 'Columns',
+        'loading' => 'Loading',
     ];
 
     /** @return list<int> */
@@ -153,6 +174,77 @@ abstract class DataTable extends Component
         $this->resetPage();
     }
 
+    /**
+     * The trash pills to show (0.17.0), in order: any of 'active', 'all', 'deleted', 'archived'. Default: the first three
+     * for an Eloquent model with SoftDeletes, none otherwise. Return 'archived' only when applyTrashed() handles it.
+     *
+     * @return list<string>
+     */
+    protected function trashedOptions(): array
+    {
+        $query = $this->query();
+        if ($query instanceof EloquentBuilder && in_array(SoftDeletes::class, class_uses_recursive($query->getModel()), true)) {
+            return ['active', 'all', 'deleted'];
+        }
+
+        return [];
+    }
+
+    /**
+     * Applies the trash filter $trashed (0.17.0); called whenever trashedOptions() is not empty. Default for SoftDeletes:
+     * all = withTrashed(), deleted = onlyTrashed(), active = the model's own scope. Override it for a status or archive
+     * column, e.g. `$this->trashed === 'archived' ? $query->where('status', 'Archived') : $query->where('status', '!=', 'Archived')`
+     * (keep the parameter type EloquentBuilder|QueryBuilder in the override).
+     */
+    protected function applyTrashed(EloquentBuilder|QueryBuilder $query): EloquentBuilder|QueryBuilder
+    {
+        if (! $query instanceof EloquentBuilder || ! in_array(SoftDeletes::class, class_uses_recursive($query->getModel()), true)) {
+            return $query;
+        }
+
+        return match ($this->trashed) {
+            'all' => $query->withTrashed(),
+            'deleted' => $query->onlyTrashed(),
+            default => $query,
+        };
+    }
+
+    /** Choose a trash pill (0.17.0). Unknown values fall back to active. */
+    public function setTrashed(string $value): void
+    {
+        $this->trashed = in_array($value, $this->trashedOptions(), true) ? $value : 'active';
+        $this->resetPage();
+    }
+
+    public function updatingTrashed(): void
+    {
+        $this->resetPage();
+    }
+
+    /** Show or hide a column (0.17.0); columns with 'hideable' => false stay. */
+    public function toggleColumn(string $key): void
+    {
+        $columns = $this->normalizedColumns();
+        if (! isset($columns[$key]) || ! $columns[$key]['hideable']) {
+            return;
+        }
+        $this->hidden = in_array($key, $this->hidden, true)
+            ? array_values(array_diff($this->hidden, [$key]))
+            : array_values(array_merge($this->hidden, [$key]));
+    }
+
+    /** Offer the column chooser in the toolbar (0.17.0). Default false: return true to let users hide columns. */
+    protected function columnChooser(): bool
+    {
+        return false;
+    }
+
+    /** Number of skeleton rows while loading (0.17.0). Default: the page size, at most 10. */
+    protected function skeletonRows(): int
+    {
+        return max(1, min(10, $this->perPage));
+    }
+
     public function updatingPerPage(): void
     {
         $this->resetPage();
@@ -178,6 +270,14 @@ abstract class DataTable extends Component
             $query->orderBy($this->sortBy, $this->sortDirection === 'desc' ? 'desc' : 'asc');
         }
 
+        $options = $this->trashedOptions();
+        if ($options !== []) {
+            if (! in_array($this->trashed, $options, true)) {
+                $this->trashed = 'active';
+            }
+            $query = $this->applyTrashed($query);
+        }
+
         return $query;
     }
 
@@ -187,7 +287,7 @@ abstract class DataTable extends Component
     }
 
     /**
-     * @return array<string, array{label: string, sortable: bool, numeric: bool, searchable: bool}>
+     * @return array<string, array{label: string, sortable: bool, numeric: bool, searchable: bool, hideable: bool, hideBelow: ?string}>
      */
     protected function normalizedColumns(): array
     {
@@ -199,6 +299,10 @@ abstract class DataTable extends Component
                 'sortable' => (bool) ($definition['sortable'] ?? true),
                 'numeric' => (bool) ($definition['numeric'] ?? false),
                 'searchable' => (bool) ($definition['searchable'] ?? true),
+                'hideable' => (bool) ($definition['hideable'] ?? true),
+                'hideBelow' => in_array($definition['hideBelow'] ?? $definition['hide-below'] ?? null, ['sm', 'md', 'lg'], true)
+                    ? ($definition['hideBelow'] ?? $definition['hide-below'])
+                    : null,
             ];
         }
 
@@ -208,12 +312,18 @@ abstract class DataTable extends Component
     public function render(): View
     {
         $rows = $this->rows();
+        $all = $this->normalizedColumns();
+        $visible = array_filter($all, fn (array $c, string $key): bool => ! $c['hideable'] || ! in_array($key, $this->hidden, true), ARRAY_FILTER_USE_BOTH);
 
         return view('omniacss-livewire::livewire.data-table', [
-            'columns' => $this->normalizedColumns(),
+            'columns' => $visible,
+            'allColumns' => $all,
+            'chooser' => $this->columnChooser(),
+            'trashedOptions' => $this->trashedOptions(),
+            'skeletonRows' => $this->skeletonRows(),
             'rows' => $rows,
             'cells' => collect($rows->items())->map(
-                fn ($row): array => collect($this->normalizedColumns())
+                fn ($row): array => collect($visible)
                     ->map(fn ($c, $key) => $this->cell($key, $row))
                     ->all()
             )->all(),

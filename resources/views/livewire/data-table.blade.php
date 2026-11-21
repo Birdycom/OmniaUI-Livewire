@@ -1,5 +1,7 @@
-{{-- OmniaCSS data-table block, driven by Omniacss\Livewire\DataTable. Markup/classes follow packages/blocks/blocks/data-table.html. --}}
-<section class="oc-card oc-block-datatable">
+{{-- OmniaCSS data-table block, driven by Omniacss\Livewire\DataTable. Markup/classes follow packages/blocks/blocks/data-table.html.
+     0.17.0: trash pills, column chooser (popover, stays open while Livewire morphs) and skeleton rows while a request runs
+     (wire:loading sets aria-busy on the section; the CSS swaps the rows for the skeleton body). --}}
+<section class="oc-card oc-block-datatable" wire:loading.delay.attr="aria-busy">
     @if ($title || $description)
         <header class="oc-block-datatable-head">
             <div>
@@ -15,14 +17,30 @@
     <div class="oc-block-datatable-body">
         <div class="oc-table-toolbar">
             <input class="oc-input" type="search" wire:model.live.debounce.300ms="search" placeholder="{{ $placeholder }}" aria-label="{{ $placeholder }}">
+            @if (count($trashedOptions) > 1)
+                <div class="oc-filter-pills" role="group" aria-label="{{ $labels['trashFilter'] }}">
+                    @foreach ($trashedOptions as $option)
+                        <button class="oc-filter-pill" type="button" wire:click="setTrashed('{{ $option }}')" @if ($trashed === $option) aria-current="true"@endif>{{ $labels[['active' => 'activeOnly', 'all' => 'includingTrash', 'deleted' => 'trashOnly', 'archived' => 'archiveOnly'][$option] ?? 'activeOnly'] }}</button>
+                    @endforeach
+                </div>
+            @endif
             <span class="oc-table-toolbar-spacer"></span>
+            @if ($chooser)
+                <button class="oc-btn oc-btn--outline oc-btn--sm" type="button" popovertarget="{{ $this->getId() }}-columns">{{ $labels['columns'] }}</button>
+                <div class="oc-dropdown-menu oc-data-table-colpick" id="{{ $this->getId() }}-columns" popover>
+                    <p class="oc-data-table-colpick-title">{{ $labels['columns'] }}</p>
+                    @foreach ($allColumns as $key => $column)
+                        <label class="oc-dropdown-item" wire:key="oc-col-{{ $key }}"><input type="checkbox" wire:click="toggleColumn('{{ $key }}')" @checked(! $column['hideable'] || ! in_array($key, $hidden, true)) @disabled(! $column['hideable'])> {{ $column['label'] }}</label>
+                    @endforeach
+                </div>
+            @endif
         </div>
         <div class="oc-table-wrap">
             <table class="{{ $tableClass ?? 'oc-table' }}">
                 <thead>
                     <tr>
                         @foreach ($columns as $key => $column)
-                            <th @if ($column['sortable'] && $sortBy === $key) aria-sort="{{ $sortDirection === 'desc' ? 'descending' : 'ascending' }}" @endif @if ($column['numeric']) data-numeric @endif>
+                            <th @if ($column['sortable'] && $sortBy === $key) aria-sort="{{ $sortDirection === 'desc' ? 'descending' : 'ascending' }}" @endif @if ($column['numeric']) data-numeric @endif @if ($column['hideBelow'] ?? null) data-hide-below="{{ $column['hideBelow'] }}" @endif>
                                 @if ($column['sortable'])
                                     <a class="oc-table-sort" href="#" wire:click.prevent="sort('{{ $key }}')">{{ $column['label'] }}</a>
                                 @else
@@ -33,11 +51,21 @@
                         <th><span class="oc-visually-hidden">{{ $labels['actions'] }}</span></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="oc-data-table-skeleton-body" aria-hidden="true">
+                    @for ($i = 0; $i < $skeletonRows; $i++)
+                        <tr class="oc-data-table-skeleton">
+                            @foreach ($columns as $key => $column)
+                                <td @if ($column['numeric']) data-numeric @endif @if ($column['hideBelow'] ?? null) data-hide-below="{{ $column['hideBelow'] }}" @endif><span class="oc-skeleton oc-data-table-skeleton-bar"></span></td>
+                            @endforeach
+                            <td></td>
+                        </tr>
+                    @endfor
+                </tbody>
+                <tbody class="oc-block-datatable-rows">
                     @forelse ($rows as $index => $row)
                         <tr wire:key="oc-row-{{ $rows->firstItem() + $index }}">
                             @foreach ($columns as $key => $column)
-                                <td @if ($column['numeric']) data-numeric @endif>{{ $cells[$index][$key] ?? '' }}</td>
+                                <td @if ($column['numeric']) data-numeric @endif @if ($column['hideBelow'] ?? null) data-hide-below="{{ $column['hideBelow'] }}" @endif>{{ $cells[$index][$key] ?? '' }}</td>
                             @endforeach
                             <td class="oc-table-actions">
                                 @foreach ($rowActions[$index] ?? [] as $action)

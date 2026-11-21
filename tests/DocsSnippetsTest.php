@@ -36,10 +36,12 @@ class DocsSnippetsTest extends TestCase
         'blade:components/calendar #3' => 'uses $date from the controller',
         'blade:components/code-plate #1' => 'uses $qrTest from the controller',
         'blade:components/code-plate #2' => 'uses $qrTest from the controller',
+        'blade:components/copy-field #3' => 'uses $apiKey from the controller',
         'blade:components/countdown #1' => 'uses $round from the controller',
         'blade:components/empty-state #2' => 'uses $distance from the controller',
         'blade:components/logo #1' => 'uses $customer from the controller',
         'blade:components/logo #2' => 'uses $logo from the controller',
+        'blade:components/recovery-codes #2' => 'uses $codes from the controller',
         'blade:components/status-dot #4' => 'uses $state from the controller',
         'blade:blocks/content-blocks #1' => 'uses $step from the controller',
         'blade:blocks/route-progress #1' => 'uses $route from the controller',
@@ -53,7 +55,7 @@ class DocsSnippetsTest extends TestCase
         parent::setUp();
 
         // Named routes and the session that the plain Blade tabs use (route(), old(), session(), @csrf).
-        foreach (['contact.send' => '/contact', 'newsletter.subscribe' => '/newsletter', 'profile.update' => '/profile', 'columns.update' => '/columns', 'projects.destroy' => '/projects/{project}'] as $name => $uri) {
+        foreach (['contact.send' => '/contact', 'newsletter.subscribe' => '/newsletter', 'profile.update' => '/profile', 'columns.update' => '/columns', 'projects.destroy' => '/projects/{project}', 'two-factor.login' => '/two-factor-challenge'] as $name => $uri) {
             Route::post($uri, fn () => '')->name($name);
         }
         app('router')->getRoutes()->refreshNameLookups();
