@@ -14,7 +14,7 @@ class V0170AppTest extends TestCase
         $html = $this->render('<x-oc::wire.otp model="code" complete="verify" :length="6" />');
 
         $this->assertStringContainsString('wire:model="code"', $html);
-        // 0.18.0: the check moved into done() (also used for a value from the server); still on the next tick.
+        // 0.17.1: the check moved into done() (also used for a value from the server); still on the next tick.
         $this->assertStringContainsString('x-on:input="done($event.target.value)"', $html);
         $this->assertStringContainsString('v.length < 6', $html);
         $this->assertStringContainsString('this.$nextTick(() => $wire.verify())', $html);

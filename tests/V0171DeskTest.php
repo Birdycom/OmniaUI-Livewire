@@ -1,13 +1,13 @@
 <?php
 
-// File: tests/V0180DeskTest.php
-// Map: 0.18.0 desk wishes in Livewire: wire.otp also runs complete for a value from the server (and on load), once per code
+// File: tests/V0171DeskTest.php
+// Map: 0.17.1 desk wishes in Livewire: wire.otp also runs complete for a value from the server (and on load), once per code
 
 declare(strict_types=1);
 
 namespace Omniacss\Livewire\Tests;
 
-class V0180DeskTest extends TestCase
+class V0171DeskTest extends TestCase
 {
     public function test_otp_complete_also_for_a_value_from_the_server(): void
     {
