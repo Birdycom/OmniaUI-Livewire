@@ -12,7 +12,7 @@
         <label class="oc-field-label" for="{{ $id }}">{{ $label }}</label>
     @endif
     <input {{ $attributes->class(['oc-otp'])->merge(['id' => $id, 'type' => 'text', 'inputmode' => 'numeric', 'autocomplete' => 'one-time-code', 'maxlength' => $length, 'pattern' => '[0-9]*', 'style' => '--oc-otp-length: '.(int) $length])->merge(\Omniacss\Livewire\WireModel::attributes($model, (bool) $live)) }}
-        @if ($complete) x-data x-on:input="if ($event.target.value.length >= {{ (int) $length }}) $nextTick(() => $wire.{{ $complete }}())" @endif
+        @if ($complete) x-data="{ fired: null, done(v) { v = String(v ?? ''); if (v.length < {{ (int) $length }}) { this.fired = null; return } if (this.fired === v) return; this.fired = v; this.$nextTick(() => $wire.{{ $complete }}()) } }" x-init="done($el.value){{ $property ? "; \$wire.\$watch('".$property."', (v) => done(v))" : '' }}" x-on:input="done($event.target.value)" @endif
         @if ($invalid) aria-invalid="true" @endif>
     @if ($description)
         <p class="oc-field-description">{{ $description }}</p>
